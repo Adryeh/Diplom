@@ -1,24 +1,16 @@
 from flask import Flask, jsonify
 from flask_cors import CORS, cross_origin
-
+import json
 
 app = Flask(__name__)
 CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+with open('data/users.json') as json_file:
+    users = json.load(json_file)
 
-users = [
-    {
-        'id': 0,
-        'name': 'Andrew',
-        'role': 'Employee'
-    },
-    {
-        'id': 1,
-        'name': 'Ivan',
-        'role': 'Worker'
-    }
-]
+
+companies = []
 
 vacancies = [
     {
@@ -38,13 +30,22 @@ def hello_world():
     return 'Hello World'
 
 
-@app.route('/user', methods=['GET'])
+@app.route('/users', methods=['GET'])
 @cross_origin()
-def user():
+def users_list():
     response = jsonify(message=users)
     # response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
+
+@app.route('/user/<int:id>', methods=['GET'])
+@cross_origin()
+def user_by_id(id):
+
+    user = [user for user in users if user['id'] == id][0]
+    response = jsonify(message=user)
+    # response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 @app.route('/vacancy', methods=['GET'])
 def vacancy():

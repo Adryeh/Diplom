@@ -2,9 +2,7 @@ import VueRouter from "vue-router"
 import Users from '@/components/Users'
 import Main from '@/components/Main'
 import Test from '@/components/Test'
-import UserInfo from '@/components/UserInfo'
-// import Navigation from '@/components/Navigation'
-
+import User from '@/components/User'
 
 export default new VueRouter({
 	mode: 'history',
@@ -26,8 +24,8 @@ export default new VueRouter({
         },
         {
             path: '/users/:id',
-            name: 'info',
-            component: UserInfo
+            name: 'user',
+            component: User
         }
 	]
 })

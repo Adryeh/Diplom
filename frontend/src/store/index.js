@@ -23,7 +23,7 @@ export default new Vuex.Store({
     actions: {
         FETCH_USERS({commit}) {
             console.log("i am here")
-            return axios.get("http://localhost:5000/user")
+            return axios.get("http://localhost:5000/users")
                 .then((users) => {
                     commit('SET_USERS_TO_STORE', users.data.message);
                     return users;
