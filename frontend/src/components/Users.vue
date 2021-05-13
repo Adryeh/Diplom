@@ -21,7 +21,7 @@
       <span class="user-description_item">Должность: {{user.job_title}}</span>
       <span class="user-description_item">Гражданство: {{user.citizenship}}</span>
       <hr>
-      <span class="user-description_item">Обо мне: {{user.about.slice(0,200)+"..."}}</span>
+      <span class="user-description_item">Краткая информация: {{user.about.slice(0,200)+"..."}}</span>
     </div>
     <button type="button" class="check-more_link btn btn-outline-primary" @click="$router.push({name: 'user', params: {'id': user.id}})">Резюме</button>
     </div>
