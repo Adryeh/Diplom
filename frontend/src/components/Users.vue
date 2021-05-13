@@ -1,6 +1,15 @@
 <template>
 
-  <div>
+  <div id="users-component">
+  <h1>Список пользователей</h1>
+  <hr>
+  <div class="user-sorting-menu">
+    <label for="sort-select">Sort by: </label>
+    <select id="sort-select">
+      <option>Alphabetic</option>
+      <option>Other</option>
+    </select>
+  </div>
     <div class="user-list" 
     v-for="user in this.USERS"
     :key="user.id">
@@ -16,12 +25,12 @@
     </div>
 
     <div class="description-container">
-      <span class="user-description_item">Полное имя: {{user.full_name}}</span>
-      <span class="user-description_item">Пол: {{user.gender}}</span>
-      <span class="user-description_item">Должность: {{user.job_title}}</span>
-      <span class="user-description_item">Гражданство: {{user.citizenship}}</span>
+      <span class="user-description_item"><b>Полное имя:</b> {{user.full_name}}</span>
+      <span class="user-description_item"><b>Пол:</b> {{user.gender}}</span>
+      <span class="user-description_item"><b>Должность:</b> {{user.job_title}}</span>
+      <span class="user-description_item"><b>Гражданство:</b> {{user.citizenship}}</span>
       <hr>
-      <span class="user-description_item">Краткая информация: {{user.about.slice(0,200)+"..."}}</span>
+      <span class="user-description_item"><b>Краткая информация:</b> {{user.about.slice(0,200)+"..."}}</span>
     </div>
     <button type="button" class="check-more_link btn btn-outline-primary" @click="$router.push({name: 'user', params: {'id': user.id}})">Резюме</button>
     </div>
@@ -61,6 +70,22 @@ export default {
 
 
 <style scoped>
+#checkboxes {
+  border: solid red;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+}
+
+#checkboxes ul {
+  display: flex;
+  list-style: none;
+}
+
+#checkboxes ul li {
+  margin: 0px 25px;
+}
+
 a {
   text-decoration: none;
 }
@@ -96,6 +121,7 @@ a {
   width: 100%;
   margin: 10px 0px;
   background-color: white;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
 }
 .description-container {
   flex-grow: 1;
@@ -106,6 +132,12 @@ a {
   width: 75%;
 }
 .user-description_item{
-  font-weight: bold;
+  
+}
+#sort-select {
+  margin-left: 10px;
+}
+#users-component {
+  
 }
 </style>

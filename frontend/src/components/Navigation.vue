@@ -1,7 +1,29 @@
 <template>
-<ul>
-	<li><a @click="$router.push('/users')">Users</a></li>
-</ul>
+<!-- <nav class="navbar navbar-dark bg-dark">
+  <li><a @click="$router.push('/users')">Users</a></li>
+</nav> -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="" @click="$router.push('/')">FindJob</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarText">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="" @click="$router.push('/')">Домой <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="" @click="$router.push('/users')">Пользователи</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="" @click="$router.push('/vacancy')">Вакансии</a>
+      </li>
+    </ul>
+    <span class="navbar-text">
+      Navbar text with an inline element
+    </span>
+  </div>
+</nav>
 </template>
 
 <script>
@@ -13,28 +35,7 @@ export default {
 </script>
 
 <style scoped>
-ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background-color: #333;
-}
-
-li {
-  float: left;
-}
-
-li a {
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
-}
-
-/* Change the link color to #111 (black) on hover */
-li a:hover {
-  background-color: #111;
+.navbar {
+  margin-bottom: 25px;
 }
 </style>

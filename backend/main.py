@@ -9,20 +9,12 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 with open('data/users.json') as json_file:
     users = json.load(json_file)
 
+with open('data/vacancies.json') as json_file:
+    vacancies = json.load(json_file)
+
 
 companies = []
 
-vacancies = [
-    {
-        'id': 0,
-        'summary': 'Junior Python Developer',
-        'payment': '10.000',
-        'currency': 'RUB',
-        'requirements': 'Python, SQL, WEB, Django, Flask',
-        'company': 'RosNoU',
-        'description': 'Looking for developer'
-    }
-]
 
 
 @app.route('/')
