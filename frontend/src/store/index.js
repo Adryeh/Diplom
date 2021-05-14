@@ -8,16 +8,23 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
-        users: []
+        users: [],
+        vacancies: []
     },
     getters: {
         USERS(state) {
             return state.users
+        },
+        VACANCIES(state) {
+            return state.vacancies
         }
     },
     mutations: {
         SET_USERS_TO_STORE: (state, users) => {
             state.users = users;
+        },
+        SET_VACANCY_TO_STORE: (state, vacancies) => {
+            state.vacancies = vacancies;
         }
     },
     actions: {
@@ -31,6 +38,17 @@ export default new Vuex.Store({
                 .catch((error) => {
                     console.log(error);
                     return error;
+                })
+        },
+        FETCH_VACANCIES({commit}) {
+            return axios.get("http://localhost:5000/vacancy")
+                .then((vacancies) => {
+                    commit('SET_VACANCY_TO_STORE', vacancies.data);
+                    return vacancies;
+                })
+                .catch((error) => {
+                    console.log(error);
+                    return error
                 })
         }
     }
