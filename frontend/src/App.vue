@@ -19,16 +19,14 @@ export default {
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=KoHo');
-body {
-  background-color: #f39189;
-}
+
 #app {
   font-family: 'KoHo', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  background-color: #e9e9e9;
+  
 }
 .users {
   width: 15%;
@@ -36,5 +34,13 @@ body {
 body {
   margin: 0;
   padding: 0;
+  border: solid red;
+  height: 100%;
+  background-color: #7e0f0f;
+}
+.text-header {
+  padding: 25px 0px;
+  background-color: #343a40;
+  color: white;
 }
 </style>
