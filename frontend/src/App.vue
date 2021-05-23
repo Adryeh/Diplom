@@ -1,7 +1,7 @@
 <template>
   <div id="app">
       <Navigation/>
-      <router-view></router-view>
+      <router-view v-if="authenticated"></router-view>
   </div>
 </template>
 
@@ -13,30 +13,34 @@ export default {
   name: 'App',
   components: {
     Navigation
+  },
+  data () {
+    return {
+      authenticated: false
+    }
   }
 }
 </script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=KoHo');
-
+@font-face {
+  font-family: "Literata";
+  src: local("Literata"),
+       url("./fonts/Literata/Literata-Regular.ttf");
+}
 #app {
-  font-family: 'KoHo', sans-serif;
+  font-family: 'Literata', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  
 }
-.users {
+/* .users {
   width: 15%;
-}
-body {
-  margin: 0;
-  padding: 0;
-  border: solid red;
-  height: 100%;
-  background-color: #7e0f0f;
+} */
+h1 {
+  font-weight: 400;
 }
 .text-header {
   padding: 25px 0px;

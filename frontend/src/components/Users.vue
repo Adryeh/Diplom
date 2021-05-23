@@ -1,8 +1,8 @@
 <template>
 
   <div id="users-component">
-  <h1>Список пользователей</h1>
-  <hr>
+  <h1 class="text-header">Список пользователей</h1>
+
   <div class="user-sorting-menu">
     <label for="sort-select">Sort by: </label>
     <select id="sort-select">
@@ -138,6 +138,9 @@ a {
   margin-left: 10px;
 }
 #users-component {
-  
+  margin-top: 3%;
+}
+.user-sorting-menu{
+  margin-top: 3%;
 }
 </style>

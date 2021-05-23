@@ -2,14 +2,23 @@
 <div class="layout">
   <div class="sidebar">
     <h3 class="text-header">Параметры поиска</h3>
-    <hr>
+
     <form action="" class="form_job-title">
-      <input type="text" name="" id="" v-model="searchQuery" placeholder="Название вакансии">
+      <input type="text" name="form_job-title" id="form_job-title" v-model="searchQuery" placeholder="Название вакансии">
     </form>
+    
+    <div class="employment-type">
+      <h6 class="sidebar-title">Тип занятости</h6>
+      <ul class="type-list-group">
+        <li>Full-Time<span class="badge badge-primary badge-pill">1</span></li>
+        <li>Part-Time<span class="badge badge-primary badge-pill">3</span></li>
+        <li>Remote<span class="badge badge-primary badge-pill">11</span></li>
+      </ul>
+    </div>
   </div>
   <div class="content">
     <h3 class="text-header">Список вакансий</h3>
-    <hr>
+
     <div class="vacancy-list" v-for="vacancy in resultQuery"
     :key="vacancy.id">
     <div class="card">
@@ -70,6 +79,7 @@ export default {
 </script>
 
 <style scoped>
+
 .layout {
   display: flex;
   flex-direction: row;
@@ -83,6 +93,7 @@ export default {
   height: 80vh;
   position: fixed;
   z-index: 1;
+  background-color: white;
 }
 
 .content {
@@ -97,5 +108,14 @@ export default {
   margin-top: 15px;
 }
 
+.type-list-group {
+  border: solid red;
+  list-style: none;
+  text-align: left;
+}
+.sidebar-title {
+  margin: 15px 0px;
+  border: solid red;
 
+}
 </style>

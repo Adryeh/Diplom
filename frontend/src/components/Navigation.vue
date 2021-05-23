@@ -18,6 +18,12 @@
       <li class="nav-item">
         <a class="nav-link" href="" @click="$router.push('/vacancy')">Вакансии</a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link" href="" @click="$router.push('/login')">Авторизация</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="" @click="$router.push('/register')">Регистрация</a>
+      </li>
     </ul>
     <span class="navbar-text">
       Navbar text with an inline element

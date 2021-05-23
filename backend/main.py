@@ -15,8 +15,6 @@ with open('data/vacancies.json') as json_file:
 
 companies = []
 
-
-
 @app.route('/')
 def hello_world():
     return 'Hello World'
