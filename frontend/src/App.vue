@@ -1,7 +1,7 @@
 <template>
   <div id="app">
       <Navigation/>
-      <router-view v-if="authenticated"></router-view>
+      <router-view></router-view>
   </div>
 </template>
 
