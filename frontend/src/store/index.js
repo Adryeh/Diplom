@@ -54,7 +54,8 @@ export default new Vuex.Store({
                 })
         },
         FETCH_VACANCIES({commit}) {
-            return axios.get("http://localhost:5000/vacancy")
+            let token = localStorage.getItem('token')
+            return axios.get("http://localhost:5000/vacancy",{ headers: {'Authorization': `Bearer ${token}`}})
                 .then((vacancies) => {
                     commit('SET_VACANCY_TO_STORE', vacancies.data);
                     return vacancies;
@@ -69,13 +70,14 @@ export default new Vuex.Store({
                 username: authData.username,
                 password: authData.password
             }).then(response => {
-                let success = response.data.success;
-
-                if (success === true) {
+                console.log(response);
+                let success = response.status;
+                console.log(success);
+                if (success === 200) {
                     commit('authUser', {username: authData.username, token: response.data.token})
-                    localStorage.setItem('token', response.data.token)
+                    localStorage.setItem('token', response.data.access_token)
                     localStorage.setItem('username', response.data.username)
-                    router.replace('dashboard')
+                    
                 } else {
                     console.log("Login error");
                 }

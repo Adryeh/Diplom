@@ -30,7 +30,7 @@ export default {
        url("./fonts/Literata/Literata-Regular.ttf");
 }
 #app {
-  font-family: 'Literata', sans-serif;
+  font-family: 'Arial', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
