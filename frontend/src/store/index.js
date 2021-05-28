@@ -77,7 +77,7 @@ export default new Vuex.Store({
                     commit('authUser', {username: authData.username, token: response.data.token})
                     localStorage.setItem('token', response.data.access_token)
                     localStorage.setItem('username', response.data.username)
-                    
+                    router.replace('vacancy');
                 } else {
                     console.log("Login error");
                 }
