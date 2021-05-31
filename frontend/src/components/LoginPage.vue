@@ -41,9 +41,13 @@
 					username: this.username,
 					password: this.password,
 				}
+				console.log('form', formData);
 				this.$store.dispatch('login', formData).then(() => {
-					this.$router.push('/vacancy');
-				});
+					this.$router.push('/');
+				}).catch(err => {
+					console.log(err);
+					this.$router.push('/register');
+				})
 			}
 		}
 	}

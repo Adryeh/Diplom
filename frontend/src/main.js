@@ -7,6 +7,7 @@ import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap-vue/dist/bootstrap-vue.css"
 import store from '@/store/index'
 import '@/assets/css/main.css'
+import './axios'
 
 
 Vue.config.productionTip = false

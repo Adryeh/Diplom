@@ -67,6 +67,19 @@ class CompanyModel(db.Model):
         return f"<Company {self.name}>"
 
 
+class UserType(db.Model):
+    __tablename__ = "usert_type"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String())
+
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return f"<UserType {self.name}>"    
+
+
 class User(db.Model):
     __tablename__ = 'user'
 
@@ -188,7 +201,7 @@ def vacancy():
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-
+    print("debug register data income", data)
     if User.find_by_username(data['username']):
         return {'message': 'User {} already exists'. format(data['username'])}
 
@@ -212,14 +225,14 @@ def login():
     data = request.get_json()
     current_user = User.find_by_username(data['username'])
     if not current_user:
-        return {'message': 'User {} doesn\'t exist'.format(data['username'])}
+        return {'message': 'User {} doesn\'t exist'.format(data['username'])}, 401
 
     if User.verify_hash(data['password'], current_user.password):
         access_token = create_access_token(identity = data['username'])
         refresh_token = create_refresh_token(identity = data['username'])
         return {'message': 'Logged in as {}'.format(current_user.username), 'access_token': access_token, 'refresh_token': refresh_token, 'username':current_user.username}
     else:
-        return {'message': 'Wrong credentials'} 
+        return {'message': 'Wrong credentials'}, 401
 
 
 @app.route('/refresh_token', methods=['POST'])

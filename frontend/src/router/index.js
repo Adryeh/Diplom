@@ -6,6 +6,7 @@ import User from '@/components/User'
 import Vacancies from '@/components/Vacancies'
 import LoginPage from '@/components/LoginPage'
 import RegistrationPage from '@/components/RegistrationPage'
+import Profile from '@/components/Profile'
 
 export default new VueRouter({
 	mode: 'history',
@@ -45,6 +46,11 @@ export default new VueRouter({
             path: '/register',
             name: 'register',
             component: RegistrationPage
+        },
+        {
+            path: '/profile',
+            name: 'profile',
+            component: Profile
         }
 	]
 })

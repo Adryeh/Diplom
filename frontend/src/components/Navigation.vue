@@ -24,6 +24,12 @@
       <li class="nav-item">
         <a class="nav-link" href="" @click="$router.push('/register')">Регистрация</a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link" href="" @click="$router.push('/profile')">Профиль</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="" @click="logout">Выйти</a>
+      </li>
     </ul>
     <span class="navbar-text">
       Navbar text with an inline element
@@ -35,13 +41,21 @@
 <script>
 	
 export default {
-	name: 'Navigation'
+	name: 'Navigation',
+  methods: {
+    logout: function(){
+      this.$store.dispatch('logout')
+      .then(() => {
+        this.$router.push('/login')
+      })
+    }
+  }
 }
 
 </script>
 
 <style scoped>
 .navbar {
-  margin-bottom: 25px;
+  margin-bottom: 25px; 
 }
 </style>
