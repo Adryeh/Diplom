@@ -105,6 +105,7 @@ export default new Vuex.Store({
                 })
         },
         login: ({commit}, authData) => {
+<<<<<<< HEAD
             return new Promise((resolve, reject) => {
                 commit('AUTH_REQUEST')
                 axios.post('login', {
@@ -124,6 +125,25 @@ export default new Vuex.Store({
                     localStorage.removeItem('token')
                     reject(err)
                 })
+=======
+            axios.post("http://localhost:5000/login", {
+                username: authData.username,
+                password: authData.password
+            }).then(response => {
+                console.log(response);
+                let success = response.status;
+                console.log(success);
+                if (success === 200) {
+                    commit('authUser', {username: authData.username, token: response.data.token})
+                    localStorage.setItem('token', response.data.access_token)
+                    localStorage.setItem('username', response.data.username)
+                    router.replace('vacancy');
+                } else {
+                    console.log("Login error");
+                }
+            }).catch(error => {
+                console.log(error);
+>>>>>>> 085085ce70ab0f9c73d78e71c06774651cef147a
             })
         },
         logout: ({commit}) => {
