@@ -113,7 +113,7 @@ export default new Vuex.Store({
                 }).then(response => {
                     
                     const user = response.data
-                    
+                    console.log(user);
                     localStorage.setItem('token', user.access_token)
                     commit('AUTH_SUCCESS', user)
                     // dispatch('USER_REQUEST')
@@ -147,6 +147,22 @@ export default new Vuex.Store({
                 console.log(error);
                 commit('registerFailure')
             })
-        }   
+        },
+        register_company: ({commit}, registerData) => {
+            console.log('debug action',registerData);
+            axios.post('register/company', {
+                user_id: registerData.user_id,
+                name: registerData.name,
+                location: registerData.location,
+                number_of_employees: registerData.number_of_employees
+            })
+            .then(response => {
+                console.log(response);
+                commit('registerSuccess')
+            }).catch(error =>{
+                console.log(error);
+                commit('registerFailure')
+            })
+        } 
     }
 })

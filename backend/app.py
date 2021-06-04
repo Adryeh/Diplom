@@ -1,5 +1,5 @@
 from enum import unique
-from os import access
+from os import access, name
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, get_jwt_identity, JWTManager, get_jwt)
@@ -7,6 +7,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate, current
 from passlib.hash import pbkdf2_sha256 as sha256
 import json
+
+from sqlalchemy.orm import backref, relationship
 
 
 app = Flask(__name__)
@@ -51,34 +53,92 @@ class RevokedTokenModel(db.Model):
         query = cls.query.filter_by(jti = jti).first()
         return bool(query)
 
+##
+# class Skill(db.Model):
+#     __tabelname__ = 'skill'
 
-class CompanyModel(db.Model):
+#     id = db.Column(db.Integer, primary_key = True)
+#     name = db.Column(db.String)
+
+
+# class UserSkill(db.Model):
+#     __tablename__ = 'employee_skill'
+
+#     employee_id = db.Column(db.Integer(), db.ForeignKey('employee.id'))
+#     skill_id = db.Column(db.Integer(), db.ForeignKey('skill.id'))
+
+
+# class Position(db.Model):
+#     __tablename__ = 'position'
+
+#     id = db.Column(db.Integer, primary_key = True)
+#     name = db.Column(db.String)
+
+
+# class Company(db.Model):
+#     __tablename__= 'company'
+
+#     id = db.Column(db.Integer, primary_key = True)
+#     name = db.Column(db.String)
+#     description = db.Column(db.String)
+
+
+# # class Employee(db.Model):
+# #     __tablename__ = 'employee'
+
+# #     id = db.Column(db.Integer, primary_key = True)
+# #     first_name = db.Column(db.String)
+# #     last_name = db.Column(db.String)
+# #     gender = db.Column(db.String)
+# ##
+
+   
+
+
+class CV(db.Model):
+    __tablename__ = "cv"
+
+    id = db.Column(db.Integer(), primary_key=True)
+    employee_id = db.Column(db.Integer(), db.ForeignKey('employee.id'))
+    description = db.Column(db.String())
+    skills = db.Column(db.String())
+
+
+class Vacancy(db.Model):
+    __tablename__ = "vacancy"
+
+    id = db.Column(db.Integer(), primary_key=True)
+    company_id = db.Column(db.Integer(), db.ForeignKey('company.id'))
+    name = db.Column(db.String())
+    requirements = db.Column(db.String())
+    salary = db.Column(db.String())
+
+
+class Employee(db.Model):
+    __tablename__ = 'employee'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
+    first_name = db.Column(db.String)
+    last_name = db.Column(db.String)
+    education = db.Column(db.String)
+    gender = db.Column(db.String)
+    age = db.Column(db.Integer)
+    citizenship =  db.Column(db.String)
+
+
+class Company(db.Model):
     __tablename__ = 'company'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String())
-    login = db.Column(db.String())
+    user_id = db.Column(db.Integer(), db.ForeignKey('user.id'))
+    name = db.Column(db.String)
+    location = db.Column(db.String)
+    number_of_employees = db.Column(db.Integer)
 
-    def __init__(self, name, login):
-        self.name = name
-        self.login = login
-
-    def __repr__(self):
-        return f"<Company {self.name}>"
-
-
-class UserType(db.Model):
-    __tablename__ = "usert_type"
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String())
-
-    def __init__(self, name):
-        self.name = name
-
-    def __repr__(self):
-        return f"<UserType {self.name}>"    
-
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -86,12 +146,19 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(), unique=True)
     password = db.Column(db.String())
-    user_type = db.Column(db.String())
+    email = db.Column(db.String)
+    # user_type = db.Column(db.String)
+    # email = db.Column(db.String())
+    # first_name = db.Column(db.String())
+    # second_name = db.Column(db.String())
+    # education = db.Column(db.String())
+    # gender = db.Column(db.String())
+    # age = db.Column(db.Integer())
+    # citizenship = db.Column(db.String())
 
-    def __init__(self, username, password, user_type):
+    def __init__(self, username, password):
         self.username = username
         self.password = password
-        self.user_type = user_type
 
     def __repr__(self):
         return f"<User {self.username}>"
@@ -99,6 +166,14 @@ class User(db.Model):
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
+
+    @property
+    def serialize(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email 
+        }
 
     @classmethod
     def find_by_username(cls, username):
@@ -203,12 +278,12 @@ def register():
     data = request.get_json()
     print("debug register data income", data)
     if User.find_by_username(data['username']):
-        return {'message': 'User {} already exists'. format(data['username'])}
+        return {'message': 'User {} already exists'.format(data['username'])}
 
     new_user = User(
         username=data['username'],
         password=User.generate_hash(data['password']),
-        user_type=data['user_type']
+        
     )
 
     try:
@@ -220,6 +295,28 @@ def register():
     except:
         return {'message': 'Something went wrong'}, 500
 
+
+@app.route('/register/company', methods=['POST'])
+def register_company():
+    company_data = request.get_json()
+    print('company data', company_data)
+    test = Company.query.filter_by(name=company_data['name']).first()
+    print('TEST', test)
+    if Company.query.filter_by(name=company_data['name']).first():
+        return {'message': 'Company {} already exists'.format(company_data['name'])}
+    new_company = Company(
+        user_id=company_data['user_id'],
+        name=company_data['name'],
+        location=company_data['location'],
+        number_of_employees=company_data['number_of_employees']
+    )
+
+    try:
+        new_company.save_to_db()
+        return {'message': 'Company {} was created'.format(company_data['name'])}
+    except:
+        return {'message': 'error'}, 500
+
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -230,7 +327,7 @@ def login():
     if User.verify_hash(data['password'], current_user.password):
         access_token = create_access_token(identity = data['username'])
         refresh_token = create_refresh_token(identity = data['username'])
-        return {'message': 'Logged in as {}'.format(current_user.username), 'access_token': access_token, 'refresh_token': refresh_token, 'username':current_user.username}
+        return {'message': 'Logged in as {}'.format(current_user.username), 'access_token': access_token, 'refresh_token': refresh_token, 'username':current_user.username, 'user_object': current_user.serialize}
     else:
         return {'message': 'Wrong credentials'}, 401
 
