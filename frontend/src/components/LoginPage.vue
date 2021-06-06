@@ -46,7 +46,7 @@
 				}
 				console.log('form', formData);
 				this.$store.dispatch('login', formData).then(() => {
-					this.$router.push('/');
+					// this.$router.push('/');
 				}).catch(err => {
 					console.log(err);
 					this.$router.push('/register');

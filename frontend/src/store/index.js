@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from 'axios'
-// import router from '@/router/index'
+import router from '@/router/index'
 //import authHeader from '@/services/auth-header';
 import createPersistedState from 'vuex-persistedstate'
 import * as Cookies from 'js-cookie'
@@ -142,9 +142,12 @@ export default new Vuex.Store({
                     commit('AUTH_SUCCESS', user_data)
                     if (user_data.user_type == 'employee') {
                         commit('changeUserTypeToEmployee')
+                        router.push('/')
                     } else if (user_data.user_type == 'company') {
                         commit('changeUserTypeToCompany')
+                        router.push('/')
                     } else {
+                        router.push('/register/user_type')
                         commit('changeUserTypeToNone')
                     }
 
