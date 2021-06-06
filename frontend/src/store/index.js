@@ -23,7 +23,8 @@ export default new Vuex.Store({
         vacancies: [],
         username: null,
         token: localStorage.getItem('token') || '',
-        user: {}
+        user: {},
+        currentUser_type: null
     },
     getters: {
         USERS(state) {
@@ -34,7 +35,10 @@ export default new Vuex.Store({
         },
         isAuthenticated: state => !!state.token,
         authStatus: state => state.status,
-        currentUser: state => state.user
+        currentUser: state => state.user,
+        currentEmployee: state => state.user.employee_data,
+        currentCompany: state => state.user.company_data,
+        currentUser_type: state => state.currentUser_type
     },
     mutations: {
         SET_USERS_TO_STORE: (state, users) => {
@@ -58,15 +62,34 @@ export default new Vuex.Store({
         registerFailure(state) {
             state.status = false;
         },
+        changeUserTypeToEmployee(state) {
+            state.currentUser_type = 'employee'
+        },
+        changeUserTypeToCompany(state) {
+            state.currentUser_type = 'company'
+        },
+        changeUserTypeToNone(state) {
+            state.currentUser_type = ''
+        },
+        registerCompanySuccess(state) {
+            state.currentUser_type = 'company'
+        },
+        registerEmployeeSuccess(state) {
+            state.currentUser_type = 'employee'
+        },
+        // registerCompanyFailure(state) {
+        //     state.currentUser_type = 'e'
+        // },
         AUTH_REQUEST: (state) => {
             state.status = 'loading'
         },
-        AUTH_SUCCESS: (state, user) => {
-            console.log('mutation user', user);
-            console.log('mutation token', user.access_token);
+        AUTH_SUCCESS: (state, user_data) => {
+            console.log('MUTATION user', user_data);
+
+            console.log('mutation token', user_data.access_token);
             state.status = 'success'
-            state.token = user.access_token
-            state.user = user
+            state.token = user_data.access_token
+            state.user = user_data
         },
         AUTH_ERROR: (state) => {
             state.status = 'error'
@@ -109,13 +132,22 @@ export default new Vuex.Store({
                 commit('AUTH_REQUEST')
                 axios.post('login', {
                     username: authData.username,
-                    password: authData.password
+                    password: authData.password,
+                    user_type: authData.user_type
                 }).then(response => {
-                    
-                    const user = response.data
-                    console.log(user);
-                    localStorage.setItem('token', user.access_token)
-                    commit('AUTH_SUCCESS', user)
+                    console.log('RESPONSE', response.data);
+                    const user_data = response.data.user
+                    console.log('login user', user_data);
+                    localStorage.setItem('token', user_data.access_token)
+                    commit('AUTH_SUCCESS', user_data)
+                    if (user_data.user_type == 'employee') {
+                        commit('changeUserTypeToEmployee')
+                    } else if (user_data.user_type == 'company') {
+                        commit('changeUserTypeToCompany')
+                    } else {
+                        commit('changeUserTypeToNone')
+                    }
+
                     // dispatch('USER_REQUEST')
                     resolve(response)
                 }).catch(err => {
@@ -158,11 +190,33 @@ export default new Vuex.Store({
             })
             .then(response => {
                 console.log(response);
-                commit('registerSuccess')
+                commit('')
             }).catch(error =>{
                 console.log(error);
-                commit('registerFailure')
+                console.log('Company register failed');
+                // commit('registerCompanyFailure')
             })
-        } 
+        },
+        register_employee: ({commit}, registerData) => {
+            console.log('debug action',registerData);
+            axios.post('register/employee', {
+                user_id: registerData.user_id,
+                first_name: registerData.first_name,
+                last_name: registerData.last_name,
+                education: registerData.education,
+                gender: registerData.gender,
+                age: registerData.age,
+                citizenship: registerData.citizenship,
+                position: registerData.position
+            })
+            .then(response => {
+                console.log(response);
+                commit('')
+            }).catch(error =>{
+                console.log(error);
+                console.log('Employee register failed');
+                // commit('registerCompanyFailure')
+            })
+        }        
     }
 })

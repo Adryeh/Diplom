@@ -125,6 +125,25 @@ class Employee(db.Model):
     gender = db.Column(db.String)
     age = db.Column(db.Integer)
     citizenship =  db.Column(db.String)
+    position =  db.Column(db.String)
+
+    @property
+    def serialize(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'education': self.education,
+            'gender': self.gender,
+            'age': self.age,
+            'citizenship': self.citizenship,
+            'position': self.position
+        }
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
 
 
 class Company(db.Model):
@@ -135,6 +154,16 @@ class Company(db.Model):
     name = db.Column(db.String)
     location = db.Column(db.String)
     number_of_employees = db.Column(db.Integer)
+
+    @property
+    def serialize(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'name': self.name,
+            'location': self.location,
+            'number_of_employees': self.number_of_employees
+        }
 
     def save_to_db(self):
         db.session.add(self)
@@ -300,9 +329,9 @@ def register():
 def register_company():
     company_data = request.get_json()
     print('company data', company_data)
-    test = Company.query.filter_by(name=company_data['name']).first()
+    test = Company.query.filter_by(user_id=company_data['user_id']).first()
     print('TEST', test)
-    if Company.query.filter_by(name=company_data['name']).first():
+    if Company.query.filter_by(user_id=company_data['user_id']).first():
         return {'message': 'Company {} already exists'.format(company_data['name'])}
     new_company = Company(
         user_id=company_data['user_id'],
@@ -317,17 +346,68 @@ def register_company():
     except:
         return {'message': 'error'}, 500
 
+
+@app.route('/register/employee', methods=['POST'])
+def register_employee():
+    employee_data = request.get_json()
+    print('EMPLOYEE DATA', employee_data)
+    if Employee.query.filter_by(user_id=employee_data['user_id']).first():
+        return {'message': 'Employee {} already exists'.format(employee_data['first_name'])}
+    new_employee = Employee(
+        user_id=employee_data['user_id'],
+        first_name=employee_data['first_name'],
+        last_name=employee_data['last_name'],
+        education=employee_data['education'],
+        gender=employee_data['gender'],
+        age=employee_data['age'],
+        citizenship=employee_data['citizenship'],
+        position=employee_data['position']
+    )
+    print('NEW EMPLOYEE', new_employee.first_name)
+    try:
+        new_employee.save_to_db()
+        return {'message': 'Employee {} was created'.format(new_employee['first_name'])}
+    except Exception:
+        return {'message': 'error'}, 500
+
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
+    user_type = data['user_type']
     current_user = User.find_by_username(data['username'])
+    print('current_user', current_user)
+
+    user_response_data = {}
+
     if not current_user:
         return {'message': 'User {} doesn\'t exist'.format(data['username'])}, 401
+
+    
+    if user_type == 'Работник':
+        employee_data = Employee.query.filter_by(user_id=current_user.id).first()
+        if employee_data:
+            print('employee_data', employee_data)
+            user_response_data['employee_data'] = employee_data.serialize
+            user_response_data['user_type'] = 'employee'
+        else:
+            user_response_data['user_type'] = 'none'
+    elif user_type == 'Работодатель':
+        company_data = Company.query.filter_by(user_id=current_user.id).first()
+        if company_data:
+            print('company_data', company_data)
+            user_response_data['company_data'] = company_data.serialize
+            user_response_data['user_type'] = 'company'
+        else:
+            user_response_data['user_type'] = 'none'
+
 
     if User.verify_hash(data['password'], current_user.password):
         access_token = create_access_token(identity = data['username'])
         refresh_token = create_refresh_token(identity = data['username'])
-        return {'message': 'Logged in as {}'.format(current_user.username), 'access_token': access_token, 'refresh_token': refresh_token, 'username':current_user.username, 'user_object': current_user.serialize}
+        user_response_data['access_token'] = access_token
+        user_response_data['refresh_token'] = refresh_token
+        user_response_data['user_object'] = current_user.serialize
+        return {'message': 'Logged in as {}'.format(current_user.username), 'user': user_response_data}
     else:
         return {'message': 'Wrong credentials'}, 401
 

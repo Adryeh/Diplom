@@ -11,10 +11,11 @@
 					<label>Password</label>
 					<input v-model="password" type="password" class="form-control" placeholder="Password">
 				</div>
-				<div class="form-group form-check">
-					<input type="checkbox" class="form-check-input">
-					<label class="form-check-label">Remember me</label>
-				</div>
+				<label>Тип пользователя</label>
+				<select v-model="user_type" class="custom-select" aria-label=".form-select-sm example">
+					<option value="Работодатель" selected>Работодатель</option>
+					<option value="Работник">Работник</option>
+				</select>	
 				<div v-if="invalidCredentials" class="form-group">
 					<small class="text-danger">Invalid credentials</small>
 				</div>
@@ -32,6 +33,7 @@
 			return {
 				username: '',
 				password: '',
+				user_type: '',
 				invalidCredentials: false,
 			}
 		},
@@ -40,6 +42,7 @@
 				let formData = {
 					username: this.username,
 					password: this.password,
+					user_type: this.user_type
 				}
 				console.log('form', formData);
 				this.$store.dispatch('login', formData).then(() => {
