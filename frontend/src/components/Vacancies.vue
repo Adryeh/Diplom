@@ -1,5 +1,6 @@
 <template>
 <div class="layout">
+
   <div class="sidebar">
     <h3 class="text-header">Параметры поиска</h3>
 
@@ -17,23 +18,44 @@
     </div>
   </div>
   <div class="content">
+  <div class="vac">
+    <h1>VACANCIES</h1>
+    {{this.VACANCIES}}
+  </div>
+  <br>
+  <div class="com">
+    <h1>COMPANIES</h1>
+    {{this.COMPANIES}}
+  </div>
+  data
+  {{currentCompany}}
+  user
+  {{currentUser}}
+    <form action="" class="vacancies-menu">
+      <button class="btn btn-dark"  @click="$router.push('/vacancy/create')">Новая вакансия</button>
+    </form>
     <h3 class="text-header">Список вакансий</h3>
 
     <div class="vacancy-list" v-for="vacancy in resultQuery"
     :key="vacancy.id">
     <div class="card">
+       {{companyData(vacancy.company_id)}} 
       <div class="card-header">
-        Вакансия от компании {{vacancy.company}}
+        Вакансия от компании {{companyData(vacancy.company_id)[0].name}} 
       </div>
       <div class="card-body">
-        <h5 class="card-title">Должность: {{vacancy.summary}}</h5>
-        <p class="card-text">Требования: {{vacancy.skills}}</p>
-        <p class="card-text">Зарплата: {{vacancy.price*1000}} {{vacancy.currency}}</p>
+        <h5 class="card-title">Должность: {{vacancy.name}}</h5>
+        <p class="card-text">Требования: {{vacancy.requirements}}</p>
+        <p class="card-text">Зарплата: {{vacancy.salary}}</p>
         <a href="#" class="btn btn-outline-primary">Подробнее о вакансии</a>
+        <button type="button" class="btn btn-danger" v-if="currentCompany.id==vacancy.company_id">Удалить</button>
       </div>
     </div>
     </div>
+    
   </div>
+ <!-- {{this.COMPANIES}} -->
+
 </div>
 </template>
 
@@ -53,9 +75,20 @@ export default {
   },
   computed: {
       ...mapGetters([
-          'VACANCIES'
+          'VACANCIES',
+          'COMPANIES',
+          'currentCompany',
+          'currentUser'
       ]),
-      resultQuery(){
+      // currentUserCompany() {
+      //   console.log(currentUser);
+      // },
+      // companyData() {
+      //   return this.COMPANIES.filter((item) => {
+      //     return item.id == 4
+      //   })
+      // },
+      resultQuery() {
         if (this.searchQuery) {
           return this.VACANCIES.filter((item)=>{
             return this.searchQuery.toLowerCase().split(' ').every(v => item.summary.toLowerCase().includes(v))
@@ -67,13 +100,33 @@ export default {
       }
   },
   mounted() {
+    
+    this.FETCH_COMPANIES(),
     this.FETCH_VACANCIES()
+
 
   },
   methods: {
     ...mapActions([
-        'FETCH_VACANCIES'
-    ])
+        'FETCH_VACANCIES',
+        'FETCH_COMPANIES'
+    ]),
+    companyData(company_id) {
+      return this.COMPANIES.filter( function(item) {
+        console.log('company_id', company_id);
+        console.log('ITEM', item);
+        if (item.id == company_id) {
+          console.log('item.company_id', item.company_id);
+          return item
+        }
+      })
+    },
+    createVacancy() {
+      const vacancy_data = {
+
+      }
+      console.log('vacancy_data', vacancy_data);
+    }
   }
 }
 </script>
@@ -117,5 +170,19 @@ export default {
   margin: 15px 0px;
   border: solid red;
 
+}
+.vacancies-menu {
+  display: flex;
+  padding: 25px;
+  justify-content: flex-end;
+}
+.vac{
+  border: solid red;
+}
+.com {
+  border: solid red;
+}
+.btn-danger {
+  
 }
 </style>

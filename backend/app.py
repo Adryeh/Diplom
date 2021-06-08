@@ -53,47 +53,6 @@ class RevokedTokenModel(db.Model):
         query = cls.query.filter_by(jti = jti).first()
         return bool(query)
 
-##
-# class Skill(db.Model):
-#     __tabelname__ = 'skill'
-
-#     id = db.Column(db.Integer, primary_key = True)
-#     name = db.Column(db.String)
-
-
-# class UserSkill(db.Model):
-#     __tablename__ = 'employee_skill'
-
-#     employee_id = db.Column(db.Integer(), db.ForeignKey('employee.id'))
-#     skill_id = db.Column(db.Integer(), db.ForeignKey('skill.id'))
-
-
-# class Position(db.Model):
-#     __tablename__ = 'position'
-
-#     id = db.Column(db.Integer, primary_key = True)
-#     name = db.Column(db.String)
-
-
-# class Company(db.Model):
-#     __tablename__= 'company'
-
-#     id = db.Column(db.Integer, primary_key = True)
-#     name = db.Column(db.String)
-#     description = db.Column(db.String)
-
-
-# # class Employee(db.Model):
-# #     __tablename__ = 'employee'
-
-# #     id = db.Column(db.Integer, primary_key = True)
-# #     first_name = db.Column(db.String)
-# #     last_name = db.Column(db.String)
-# #     gender = db.Column(db.String)
-# ##
-
-   
-
 
 class CV(db.Model):
     __tablename__ = "cv"
@@ -113,6 +72,41 @@ class Vacancy(db.Model):
     requirements = db.Column(db.String())
     salary = db.Column(db.String())
 
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
+
+    @property
+    def serialize(self):
+        return {
+            'id': self.id,
+            'company_id': self.company_id,
+            'name': self.name,
+            'requirements': self.requirements,
+            'salary': self.salary
+        }
+
+class EmployeeSkill(db.Model):
+    __tablename__ = 'employee_skill'
+
+    id = db.Column(db.Integer, primary_key=True)
+    skill_name = db.Column(db.String)
+    skill_progress = db.Column(db.Integer)
+    employee_id = employee_id = db.Column(db.Integer(), db.ForeignKey('employee.id'))
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
+
+    @property
+    def serialize(self):
+        return {
+            'id': self.id,
+            'skill_name': self.skill_name,
+            'skill_progress': self.skill_progress,
+            'employee_id': self.employee_id
+        }
+
 
 class Employee(db.Model):
     __tablename__ = 'employee'
@@ -126,6 +120,10 @@ class Employee(db.Model):
     age = db.Column(db.Integer)
     citizenship =  db.Column(db.String)
     position =  db.Column(db.String)
+    web_site = db.Column(db.String)
+    github = db.Column(db.String)
+    facebook = db.Column(db.String)
+    about = db.Column(db.String)
 
     @property
     def serialize(self):
@@ -138,7 +136,10 @@ class Employee(db.Model):
             'gender': self.gender,
             'age': self.age,
             'citizenship': self.citizenship,
-            'position': self.position
+            'position': self.position,
+            'web_site': self.web_site,
+            'github': self.github,
+            'facebook': self.facebook
         }
 
     def save_to_db(self):
@@ -176,14 +177,6 @@ class User(db.Model):
     username = db.Column(db.String(), unique=True)
     password = db.Column(db.String())
     email = db.Column(db.String)
-    # user_type = db.Column(db.String)
-    # email = db.Column(db.String())
-    # first_name = db.Column(db.String())
-    # second_name = db.Column(db.String())
-    # education = db.Column(db.String())
-    # gender = db.Column(db.String())
-    # age = db.Column(db.Integer())
-    # citizenship = db.Column(db.String())
 
     def __init__(self, username, password):
         self.username = username
@@ -235,27 +228,6 @@ class User(db.Model):
         return sha256.verify(password, hash)
 
 
-with open('data/users.json') as json_file:
-    users = json.load(json_file)
-
-with open('data/vacancies.json') as json_file:
-    vacancies = json.load(json_file)
-
-
-# @jwt.user_identity_loader
-# def user_identity_lookup(user):
-#     print(user)
-#     return user.id
-
-
-# @jwt.user_lookup_loader
-# def user_lookup_callback(_jwt_header, jwt_data):
-#     identity = jwt_data["sub"]
-#     return User.query.filter_by(id=identity).one_or_none()
-
-
-
-
 @jwt.token_in_blocklist_loader
 def check_if_token_in_blacklist(jwt_header, decrypted_token):
     jti = decrypted_token['jti']
@@ -275,15 +247,17 @@ def whoami():
         username=current_user.username
     )
 
-@app.route('/users', methods=['GET', 'DELETE'])
+@app.route('/employees', methods=['GET', 'POST'])
 @cross_origin()
-def users_list():
+def employee_list():
     # response = jsonify(message=users)
     # # response.headers.add("Access-Control-Allow-Origin", "*")
     # return response
     if request.method == 'GET':
-        return User.return_all()
-    elif request.method == 'DELETE':
+        employee_list = Employee.query.all()
+        print([emp.serialize for emp in employee_list])
+        return jsonify([emp.serialize for emp in employee_list])
+    elif request.method == 'POST':
         return User.delete_all()
 
 
@@ -296,10 +270,25 @@ def user_by_id(id):
     # response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
-@app.route('/vacancy', methods=['GET'])
+@app.route('/vacancy', methods=['GET', 'POST'])
 @jwt_required()
 def vacancy():
-    return jsonify(vacancies)
+    if request.method == 'GET':
+        vacancies_list = Vacancy.query.all()
+        return jsonify([vacancy.serialize for vacancy in vacancies_list])
+    elif request.method == 'POST':
+        vacancy_data = request.get_json()
+        new_vacancy = Vacancy(
+            company_id=vacancy_data['company_id'],
+            name=vacancy_data['name'],
+            requirements=vacancy_data['requirements'],
+            salary=vacancy_data['salary']
+        )
+        try:
+            new_vacancy.save_to_db()
+            return {'message': 'Vacancy created'}
+        except:
+            return {'message': 'Vacancy not created'}
 
 
 @app.route('/register', methods=['POST'])
@@ -325,26 +314,75 @@ def register():
         return {'message': 'Something went wrong'}, 500
 
 
-@app.route('/register/company', methods=['POST'])
-def register_company():
-    company_data = request.get_json()
-    print('company data', company_data)
-    test = Company.query.filter_by(user_id=company_data['user_id']).first()
-    print('TEST', test)
-    if Company.query.filter_by(user_id=company_data['user_id']).first():
-        return {'message': 'Company {} already exists'.format(company_data['name'])}
-    new_company = Company(
-        user_id=company_data['user_id'],
-        name=company_data['name'],
-        location=company_data['location'],
-        number_of_employees=company_data['number_of_employees']
-    )
+@app.route('/skill', methods=['POST', 'GET'])
+def skill():
+    if request.method == 'GET':
+        skills = EmployeeSkill.query.all()
+        return jsonify([s.serialize for s in skills])
+    elif request.method == 'POST':
+        skill_data = request.get_json()
+        print('skill_data', skill_data)
+        new_skill = EmployeeSkill(
+            skill_name=skill_data['skill_name'],
+            skill_progress=skill_data['skill_progress'],
+            employee_id=skill_data['employee_id']
+        )
+        try:
+            new_skill.save_to_db()
+            return {'message': 'Skill created'}
+        except:
+            return {'message': 'Skill creation error'}, 500
 
+
+@app.route('/skill/<int:id>', methods=['PUT'])
+@cross_origin()
+def skill_update(id):
+    skill_data = request.get_json()
+    skill = EmployeeSkill.query.filter_by(id=id).first()
+    skill.skill_name=skill_data['skill_name']
+    skill.skill_progress=skill_data['skill_progress']
     try:
-        new_company.save_to_db()
-        return {'message': 'Company {} was created'.format(company_data['name'])}
+        db.session.commit()
     except:
-        return {'message': 'error'}, 500
+        return {'message': 'Skill update failed'}, 500
+
+
+
+@app.route('/skill/delete', methods=['POST'])
+def skill_delete():
+    skill = request.get_json()
+    print('DELETE SKILL', skill)
+    s = EmployeeSkill.query.filter_by(id=skill['id']).first()
+    print('SSSS', s)
+    EmployeeSkill.query.filter_by(id=skill['id']).delete()
+    db.session.commit()
+    return {'message': 'Skill deleted'}
+
+
+@app.route('/company', methods=['POST', 'GET'])
+def company():
+    if request.method == 'GET':
+        companies_list = Company.query.all()
+        return jsonify([company.serialize for company in companies_list])
+    elif request.method == 'POST':
+        company_data = request.get_json()
+        print('company data', company_data)
+        test = Company.query.filter_by(user_id=company_data['user_id']).first()
+        print('TEST', test)
+        if Company.query.filter_by(user_id=company_data['user_id']).first():
+            return {'message': 'Company {} already exists'.format(company_data['name'])}
+        new_company = Company(
+            user_id=company_data['user_id'],
+            name=company_data['name'],
+            location=company_data['location'],
+            number_of_employees=company_data['number_of_employees']
+        )
+
+        try:
+            new_company.save_to_db()
+            return {'message': 'Company {} was created'.format(company_data['name'])}
+        except:
+            return {'message': 'error'}, 500
 
 
 @app.route('/register/employee', methods=['POST'])

@@ -8,6 +8,8 @@ import LoginPage from '@/components/LoginPage'
 import RegistrationPage from '@/components/RegistrationPage'
 import Profile from '@/components/Profile'
 import UserTypeRegister from '@/components/UserTypeRegister'
+import CreateVacancy from '@/components/CreateVacancy'
+
 
 export default new VueRouter({
 	mode: 'history',
@@ -57,6 +59,11 @@ export default new VueRouter({
             path: '/register/user_type',
             name: 'registerType',
             component: UserTypeRegister
+        },
+        {
+            path: '/vacancy/create',
+            name: 'createVacancy',
+            component: CreateVacancy
         }
 	]
 })

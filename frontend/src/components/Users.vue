@@ -2,7 +2,7 @@
 
   <div id="users-component">
   <h1 class="text-header">Список пользователей</h1>
-
+  {{this.USERS}}
   <div class="user-sorting-menu">
     <label for="sort-select">Sort by: </label>
     <select id="sort-select">
@@ -16,22 +16,22 @@
     
     <div class="flex-container">
     <div class="card">
-      <img v-if="user.gender == 'M'" src="@/assets/avatar.png" alt="Avatar" style="width:100%">
+      <img v-if="user.gender == 'М'" src="@/assets/avatar.png" alt="Avatar" style="width:100%">
       <img v-else src="@/assets/female.png" alt="Avatar" style="width:100%">
       <div class="container">
         <h4><b>{{user.first_name}}</b></h4> 
-        <p>{{user.role}}</p> 
+        <p></p> 
         
       </div>
     </div>
 
     <div class="description-container">
-      <span class="user-description_item"><b>Полное имя:</b> {{user.full_name}}</span>
+      <span class="user-description_item"><b>Полное имя:</b> {{user.first_name}}</span>
       <span class="user-description_item"><b>Пол:</b> {{user.gender}}</span>
-      <span class="user-description_item"><b>Должность:</b> {{user.job_title}}</span>
+      <span class="user-description_item"><b>Должность: </b> {{user.position}}</span>
       <span class="user-description_item"><b>Гражданство:</b> {{user.citizenship}}</span>
       <hr>
-      <span class="user-description_item"><b>Краткая информация:</b> {{user.about.slice(0,200)+"..."}}</span>
+      <span class="user-description_item"><b>Краткая информация:</b> </span>
     </div>
     <button type="button" class="check-more_link btn btn-outline-primary" @click="$router.push({name: 'user', params: {'id': user.id}})">Резюме</button>
     </div>

@@ -8,7 +8,8 @@ import "bootstrap-vue/dist/bootstrap-vue.css"
 import store from '@/store/index'
 import '@/assets/css/main.css'
 import './axios'
-
+import '@fortawesome/fontawesome-free/css/all.css'
+import '@fortawesome/fontawesome-free/js/all.js'
 
 Vue.config.productionTip = false
 Vue.use(VueRouter)

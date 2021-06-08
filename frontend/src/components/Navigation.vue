@@ -19,16 +19,16 @@
         <a class="nav-link" href="" @click="$router.push('/vacancy')">Вакансии</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="" @click="$router.push('/login')">Авторизация</a>
+        <a class="nav-link" href="" v-if="!isAuthenticated" @click="$router.push('/login')">Авторизация</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="" @click="$router.push('/register')">Регистрация</a>
+        <a class="nav-link" href="" v-if="!isAuthenticated" @click="$router.push('/register')">Регистрация</a>
       </li>
+      <!-- <li class="nav-item">
+        <a class="nav-link" href="" v-if="isAuthenticated" @click="$router.push('/profile')">Профиль</a>
+      </li> -->
       <li class="nav-item">
-        <a class="nav-link" href="" @click="$router.push('/profile')">Профиль</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="" @click="logout">Выйти</a>
+        <a class="nav-link" v-if="isAuthenticated" href="" @click="logout">Выйти</a>
       </li>
     </ul>
     <span class="navbar-text">
@@ -39,7 +39,7 @@
 </template>
 
 <script>
-	
+import {mapGetters} from 'vuex'	
 export default {
 	name: 'Navigation',
   methods: {
@@ -49,6 +49,11 @@ export default {
         this.$router.push('/login')
       })
     }
+  },
+  computed: {
+    ...mapGetters([
+          'isAuthenticated'
+    ])
   }
 }
 
