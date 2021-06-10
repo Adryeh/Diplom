@@ -3,7 +3,7 @@ import Vuex from 'vuex'
 import axios from 'axios'
 import router from '@/router/index'
 import createPersistedState from 'vuex-persistedstate'
-import * as Cookies from 'js-cookie'
+// import * as Cookies from 'js-cookie'
 
 Vue.use(Vuex)
 
@@ -11,21 +11,21 @@ const token = localStorage.getItem('token')
 const header = { 'Authorization': 'Bearer ' + token }
 
 export default new Vuex.Store({
-    plugins: [
-        createPersistedState({
-          getState: (key) => Cookies.getJSON(key),
-          setState: (key, state) => Cookies.set(key, state, { expires: 3, secure: true })
-        })],
+    plugins: [createPersistedState()],
     state: {
         status: '',
         users: [],
         vacancies: [],
         companies: [],
+        companyData: '',
+        employeeData: '',
         username: null,
         token: localStorage.getItem('token') || '',
         user: {},
         currentUser_type: null,
-        skills: []
+        skills: [],
+        favorites: [],
+        myFavorites: []
     },
     getters: {
         USERS(state) {
@@ -40,19 +40,43 @@ export default new Vuex.Store({
         SKILLS(state) {
             return state.skills
         },
+        FAVS(state) {
+            return state.favorites
+        },
+        myFAVS(state) {
+            return state.myFavorites
+        },
         isAuthenticated: state => !!state.token,
         authStatus: state => state.status,
         currentUser: state => state.user,
-        currentEmployee: state => state.user.employee_data,
-        currentCompany: state => state.user.company_data,
+        currentEmployee: state => state.employeeData,
+        currentCompany: state => state.companyData,
         currentUser_type: state => state.currentUser_type
     },
     mutations: {
+        logout: (state) => {
+            state.token = ''
+        },
+        SET_MY_FAVORITE_TO_STORE (state, data) {
+            state.myFavorites = data
+        },
+        REMOVE_MY_FAVORITE_FROM_STORE (state, data) {
+            state.myFavorites.pop(data)
+        },
+        SET_COMPANY_DATA: (state, data) => {
+            state.companyData = data
+        },
+        SET_EMPLOYEE_DATA: (state, data) => {
+            state.employeeData = data
+        },
         SET_USERS_TO_STORE: (state, users) => {
             state.users = users;
         },
         SET_SKILLS_TO_STORE: (state, skills) => {
             state.skills = skills;
+        },
+        SET_FAVORITE_TO_STORE: (state, fav) => {
+            state.favorites = fav
         },
         SET_VACANCY_TO_STORE: (state, vacancies) => {
             state.vacancies = vacancies;
@@ -66,9 +90,9 @@ export default new Vuex.Store({
         loginFailure(state) {
             state.status = false
         },
-        logout(state) {
-            state.status = false
-        },
+        // logout(state) {
+        //     state.status = false
+        // },
         registerSuccess(state) {
             state.status = false;
         },
@@ -115,7 +139,7 @@ export default new Vuex.Store({
     actions: {
         FETCH_USERS({commit}) {
             console.log("i am here")
-            return axios.get("employees")
+            return axios.get("employee", { headers: header})
                 .then((users) => {
                     console.log(users);
                     commit('SET_USERS_TO_STORE', users.data);
@@ -126,8 +150,20 @@ export default new Vuex.Store({
                     return error;
                 })
         },
+        FETCH_FAVORITE({commit}) {
+            return axios.get("favorite", { headers: header})
+                .then((fav) => {
+                    console.log('fav.data', fav.data);
+                    commit('SET_FAVORITE_TO_STORE', fav.data);
+                    return fav;
+                })
+                .catch((fav) => {
+                    console.log(fav);
+                    return fav;
+                })
+        },
         FETCH_SKILLS({commit}) {
-            return axios.get("skill")
+            return axios.get("skill", { headers: header})
             .then((skills) => {
                 commit('SET_SKILLS_TO_STORE', skills.data)
                 return skills
@@ -178,18 +214,6 @@ export default new Vuex.Store({
                     localStorage.setItem('token', user_data.access_token)
                     commit('AUTH_SUCCESS', user_data)
                     resolve(response)
-                    if (user_data.user_type == 'employee') {
-                        commit('changeUserTypeToEmployee')
-                        router.push('/')
-                    } else if (user_data.user_type == 'company') {
-                        commit('changeUserTypeToCompany')
-                        router.push('/')
-                    } else {
-                        router.push('/register/user_type')
-                        commit('changeUserTypeToNone')
-                    }
-
-                    // dispatch('USER_REQUEST')
 
                 }).catch(err => {
                     
@@ -231,6 +255,7 @@ export default new Vuex.Store({
             }, { headers: header})
             .then(response => {
                 console.log('createVacancy response', response);
+                router.push('/vacancy')
                 commit('')
                 
             }).catch(error => {
@@ -246,6 +271,44 @@ export default new Vuex.Store({
             }, { headers: header})
             .then(resp => {
                 commit('')
+
+                return resp
+            })
+            .catch(err => {
+                console.log(err);
+                return err
+            })
+        },
+        addToFav: ({commit, getters}, data) => {
+            console.log('log ADD');
+            axios.post('favorite', {
+                vacancy_id: data.vacancy_id,
+                employee_id: data.employee_id
+            }, { headers: header})
+            .then(resp => {
+                console.log('ADD resp', resp);
+                let favs = resp.data
+                let ids = []
+                let cur_emp = getters.currentEmployee
+                for (let i = 0; i < favs.length; i++) {
+                    if (favs[i].employee_id == cur_emp.id) {
+                        ids.push(favs[i].vacancy_id)
+                    }
+                }
+                commit('SET_MY_FAVORITE_TO_STORE', ids)
+                return resp
+            })
+            .catch(err => {
+                console.log(err);
+                return err
+            })
+        },
+        removeFromFav: ({commit}, id) => {
+            axios.post('/favorite/delete', {
+                vacancy_id: id
+            })
+            .then(resp => {
+                commit('REMOVE_MY_FAVORITE_FROM_STORE', id)
                 return resp
             })
             .catch(err => {
@@ -276,8 +339,10 @@ export default new Vuex.Store({
             })
             .then(response => {
                 console.log(response);
-                router.push('/profile')
-                commit('')
+                localStorage.removeItem('token')
+                commit('AUTH_LOGOUT')
+                router.push('/login')
+                
             }).catch(error =>{
                 console.log(error);
                 console.log('Company register failed');
@@ -286,7 +351,7 @@ export default new Vuex.Store({
         },
         register_employee: ({commit}, registerData) => {
             console.log('debug action',registerData);
-            axios.post('register/employee', {
+            axios.post('employee', {
                 user_id: registerData.user_id,
                 first_name: registerData.first_name,
                 last_name: registerData.last_name,
@@ -295,11 +360,15 @@ export default new Vuex.Store({
                 age: registerData.age,
                 citizenship: registerData.citizenship,
                 position: registerData.position
-            })
+            }, { headers: header})
             .then(response => {
                 console.log(response);
-                router.push('/profile')
-                commit('')
+                localStorage.removeItem('token')
+                commit('AUTH_LOGOUT')
+                router.push('/login')
+                
+            }, error => {
+                console.log(error);
             }).catch(error =>{
                 console.log(error);
                 console.log('Employee register failed');

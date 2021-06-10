@@ -93,7 +93,7 @@ export default {
 			}
 			console.log(companyData);
 			this.$store.dispatch('register_company', companyData).then(() => {
-			// this.$router.push('/login');
+                // this.$router.push('/login');
 			});
 		},
 		registerEmployee() {

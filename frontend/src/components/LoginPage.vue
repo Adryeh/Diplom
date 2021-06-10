@@ -45,8 +45,20 @@
 					user_type: this.user_type
 				}
 				console.log('form', formData);
-				this.$store.dispatch('login', formData).then(() => {
-					// this.$router.push('/');
+				this.$store.dispatch('login', formData).then((response) => {
+					const user_data = response.data.user
+					if (user_data.user_type == 'employee') {	
+                        this.$store.commit('changeUserTypeToEmployee')
+						this.$store.commit('SET_EMPLOYEE_DATA', user_data.employee_data)
+                        this.$router.push('/')
+                    } else if (user_data.user_type == 'company') {
+                        this.$store.commit('changeUserTypeToCompany')
+						this.$store.commit('SET_COMPANY_DATA', user_data.company_data)
+                        this.$router.push('/')
+                    } else {
+                        this.$router.push('/register/user_type')
+                        this.$store.commit('changeUserTypeToNone')
+                    }
 				}).catch(err => {
 					console.log(err);
 					this.$router.push('/register');

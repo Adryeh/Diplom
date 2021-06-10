@@ -1,23 +1,42 @@
 <template>
   <div id="app">
       <Navigation/>
-      <router-view></router-view>
+      <Content/>
+
   </div>
 </template>
 
 <script>
 
 import Navigation from '@/components/Navigation'
+import Content from '@/components/Content'
+import {mapActions, mapGetters} from 'vuex'	
 
 export default {
   name: 'App',
   components: {
-    Navigation
+    Navigation, Content
   },
   data () {
     return {
-      authenticated: false
+
     }
+  },
+  methods: {
+    ...mapActions([
+      'FETCH_USERS',
+      'FETCH_SKILLS',
+      'FETCH_COMPANIES'
+    ]),
+  },
+  computed: {
+    ...mapGetters([
+      'isAuthenticated',
+      'currentUser_type',
+      'currentUser',
+      'USERS',
+      'COMPANIES'
+    ]),
   }
 }
 </script>
@@ -46,5 +65,8 @@ h1 {
   padding: 25px 0px;
   background-color: #343a40;
   color: white;
+}
+.container {
+
 }
 </style>

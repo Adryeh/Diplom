@@ -1,6 +1,6 @@
 <template>
   <div class="layout">
-      {{currentCompany.id}}
+      <h2>Новая вакансия</h2>
     <div class="row">
         <div class="col-md-6 offset-md-3 col-xl-4 offset-xl-4">
             <form @submit.prevent="createVacancy()">

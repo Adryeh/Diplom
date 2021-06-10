@@ -8,11 +8,12 @@
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex flex-column align-items-center text-center">
-                                    <img src="https://bootdey.com/img/Content/avatar/avatar6.png" alt="Admin" class="rounded-circle p-1 bg-primary" width="110">
+                                    <img v-if="currentPageUser.gender == 'М'" src="@/assets/avatar.png" alt="Admin" class="rounded-circle p-1 bg-primary" width="110">
+                                    <img v-else src="@/assets/female.png" alt="Admin" class="rounded-circle p-1 bg-primary" width="110">
                                     <div class="mt-3">
-                                        <h4>{{currentUser.first_name}} {{currentUser.last_name}}</h4>
-                                        <p class="text-secondary mb-1">{{currentUser.position}}</p>
-                                        <p class="text-muted font-size-sm">{{currentUser.citizenship}}</p>
+                                        <h4>{{currentPageUser.first_name}} {{currentPageUser.last_name}}</h4>
+                                        <p class="text-secondary mb-1">{{currentPageUser.position}}</p>
+                                        <p class="text-muted font-size-sm">{{currentPageUser.citizenship}}</p>
                                     </div>
                                 </div>
                                 <hr class="my-4">
@@ -47,6 +48,7 @@
                             <div class="card-body">
                                 <h2>About me:</h2>
                                 <div>
+
                                     <b-modal id="modal-1" title="Добавить новый навык" hide-footer>
                                             <form @submit="registerSkill()">
                                             <div class="mb-3">
@@ -67,10 +69,11 @@
                             <div class="col-sm-12">
                                 <div class="card">
                                     <div class="card-body">
-                                        <h5 class="d-flex align-items-center mb-3">Ключевые навыки: <a v-b-modal.modal-1><i class="fas fa-edit"></i></a></h5>
+                                        <h5 class="d-flex align-items-center mb-3">Ключевые навыки: <a v-if="currentPageUser.id==currentEmployee.id" v-b-modal.modal-1><i class="fas fa-edit"></i></a></h5>
                                         <div class="" v-for="s in this.SKILLS" :key="s.id">
-                                            <div class="skill-body" v-if="s.employee_id==currentEmployee.id">
-                                                <p>{{s.skill_name}} <a @click="deleteSkill(s.id)" href=""><i class="fas fa-trash-alt"></i></a></p>
+                                            <div class="skill-body" v-if="currentPageUser.id==currentEmployee.id">
+
+                                                <p>{{s.skill_name}} <a v-if="currentPageUser.id==currentEmployee.id" @click="deleteSkill(s.id)" href="">del</a></p>
                                                 <div class="progress mb-3" style="height: 5px">
                                                     <div class="progress-bar bg-primary" role="progressbar" :style="{width:s.skill_progress+'%'}" :aria-valuenow="s.skill_progress" aria-valuemin="0" aria-valuemax="100"></div>
                                                 </div>
@@ -110,13 +113,32 @@ export default {
 			'currentUser_type',
 			'currentEmployee',
 			'currentCompany',
-            'SKILLS'
+            'SKILLS',
+            'COMPANIES'
          ]),
-         currentUser: {
-             get: function() {
-                 return this.USERS.filter(user => user.id === parseInt(this.id))[0]
-             }
-         }
+        getEmployeeData() {
+            console.log('hi');
+            return this.USERS.filter(item => {
+                console.log('hi2');
+                console.log('IDS', item.user_id, this.currentPageUser.id);
+            if (item.user_id == this.currentUser.id) {
+                console.log('adfASFASF', item);
+                return item
+            }
+         })
+        },
+        getCompanyData() {
+            return this.COMPANIES.filter(item => {
+                if (item.user_id == this.currentPageUser.id) {
+                return item
+                }
+            })
+        },
+        currentPageUser: {
+            get: function() {
+                return this.USERS.filter(user => user.id === parseInt(this.id))[0]
+            }
+        }
     },
     methods: {
         ...mapActions([

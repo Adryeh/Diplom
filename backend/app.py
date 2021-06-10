@@ -17,6 +17,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 # app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:1111@192.168.1.73:5432/diplom"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+app.config['SQLALCHEMY_ECHO'] = True
 
 
 
@@ -61,6 +62,26 @@ class CV(db.Model):
     employee_id = db.Column(db.Integer(), db.ForeignKey('employee.id'))
     description = db.Column(db.String())
     skills = db.Column(db.String())
+
+
+class EmployeeFavoriteVcancies(db.Model):
+    __tablename__ = "favorite"
+
+    id = db.Column(db.Integer, primary_key=True)
+    vacancy_id = db.Column(db.Integer(), db.ForeignKey('vacancy.id'))
+    employee_id = db.Column(db.Integer(), db.ForeignKey('employee.id'))
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
+
+    @property
+    def serialize(self):
+        return {
+            'id': self.id,
+            'vacancy_id': self.vacancy_id,
+            'employee_id': self.employee_id
+        }
 
 
 class Vacancy(db.Model):
@@ -247,18 +268,37 @@ def whoami():
         username=current_user.username
     )
 
-@app.route('/employees', methods=['GET', 'POST'])
+@app.route('/employee', methods=['GET', 'POST'])
 @cross_origin()
-def employee_list():
-    # response = jsonify(message=users)
-    # # response.headers.add("Access-Control-Allow-Origin", "*")
-    # return response
+# @jwt_required()
+def employee():
     if request.method == 'GET':
         employee_list = Employee.query.all()
         print([emp.serialize for emp in employee_list])
         return jsonify([emp.serialize for emp in employee_list])
     elif request.method == 'POST':
-        return User.delete_all()
+        employee_data = request.get_json()
+        print('TYPE1', type(employee_data))
+        print('EMPLOYEE DATA', employee_data)
+        if Employee.query.filter_by(user_id=employee_data['user_id']).first():
+            return {'message': 'Employee {} already exists'.format(employee_data['first_name'])}
+        new_employee = Employee(
+            user_id=employee_data['user_id'],
+            first_name=employee_data['first_name'],
+            last_name=employee_data['last_name'],
+            education=employee_data['education'],
+            gender=employee_data['gender'],
+            age=employee_data['age'],
+            citizenship=employee_data['citizenship'],
+            position=employee_data['position']
+        )
+        print('NEW EMPLOYEE', new_employee.first_name)
+        try:
+            new_employee.save_to_db()
+            return {'message': 'Employee {} was created'.format(new_employee.first_name)}, 200
+        except Exception as e:
+            print(e)
+            return {'message': 'error'}, 500
 
 
 @app.route('/user/<int:id>', methods=['GET'])
@@ -334,6 +374,35 @@ def skill():
             return {'message': 'Skill creation error'}, 500
 
 
+@app.route('/favorite', methods=['POST', 'GET', 'DELETE'])
+def favorite():
+    if request.method == 'GET':
+        favs = EmployeeFavoriteVcancies.query.all()
+        return jsonify([f.serialize for f in favs])
+    elif request.method == 'POST':
+        fav = request.get_json()
+        print('fav', fav)
+        new_fav = EmployeeFavoriteVcancies(
+            vacancy_id=fav['vacancy_id'],
+            employee_id=fav['employee_id']
+        )
+        print('new_fav', new_fav)
+        try:
+            new_fav.save_to_db()
+            fav_list = EmployeeFavoriteVcancies.query.all()
+            return jsonify([f.serialize for f in fav_list])
+        except:
+            return {'message': 'Favorite creation error'}, 500
+    
+@app.route('/favorite/delete', methods=['POST'])
+@cross_origin()
+def favorite_delete():
+    f_data = request.get_json()
+    EmployeeFavoriteVcancies.query.filter_by(vacancy_id=f_data['vacancy_id']).delete()
+    db.session.commit()
+    return {'message': 'favorite deleted'}
+
+
 @app.route('/skill/<int:id>', methods=['PUT'])
 @cross_origin()
 def skill_update(id):
@@ -384,29 +453,6 @@ def company():
         except:
             return {'message': 'error'}, 500
 
-
-@app.route('/register/employee', methods=['POST'])
-def register_employee():
-    employee_data = request.get_json()
-    print('EMPLOYEE DATA', employee_data)
-    if Employee.query.filter_by(user_id=employee_data['user_id']).first():
-        return {'message': 'Employee {} already exists'.format(employee_data['first_name'])}
-    new_employee = Employee(
-        user_id=employee_data['user_id'],
-        first_name=employee_data['first_name'],
-        last_name=employee_data['last_name'],
-        education=employee_data['education'],
-        gender=employee_data['gender'],
-        age=employee_data['age'],
-        citizenship=employee_data['citizenship'],
-        position=employee_data['position']
-    )
-    print('NEW EMPLOYEE', new_employee.first_name)
-    try:
-        new_employee.save_to_db()
-        return {'message': 'Employee {} was created'.format(new_employee['first_name'])}
-    except Exception:
-        return {'message': 'error'}, 500
 
 @app.route('/login', methods=['POST'])
 def login():

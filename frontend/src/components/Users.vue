@@ -1,19 +1,11 @@
 <template>
 
   <div id="users-component">
-  <h1 class="text-header">Список пользователей</h1>
-  {{this.USERS}}
-  <div class="user-sorting-menu">
-    <label for="sort-select">Sort by: </label>
-    <select id="sort-select">
-      <option>Alphabetic</option>
-      <option>Other</option>
-    </select>
-  </div>
+  <h1 class="text-header">Список кандидатов</h1>
     <div class="user-list" 
     v-for="user in this.USERS"
     :key="user.id">
-    
+
     <div class="flex-container">
     <div class="card">
       <img v-if="user.gender == 'М'" src="@/assets/avatar.png" alt="Avatar" style="width:100%">
@@ -51,7 +43,10 @@ export default {
   },
   computed: {
       ...mapGetters([
-          'USERS'
+          'USERS',
+          'currentEmployee',
+          'currentEmployee',
+          'COMPANIES'
       ])
   },  
   data: () => ({
@@ -113,7 +108,6 @@ a {
   display: flex;
   flex-direction:row;
   align-items: flex-start;
-  width: 80%;
   margin: 0 auto;
 
 }

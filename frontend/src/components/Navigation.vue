@@ -13,10 +13,16 @@
         <a class="nav-link" href="" @click="$router.push('/')">Домой <span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="" @click="$router.push('/users')">Пользователи</a>
+        <a class="nav-link" v-if="isAuthenticated" href="" @click="$router.push('/users')">Кандидаты</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="" @click="$router.push('/vacancy')">Вакансии</a>
+        <a class="nav-link" v-if="isAuthenticated" href="" @click="$router.push('/vacancy')">Вакансии</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" v-if="isAuthenticated && currentUser_type=='employee'" href="" @click="$router.push({name: 'user', params: {'id': currentEmployee.id}})">Моё резюме</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" v-if="isAuthenticated && currentUser_type=='employee'" href="" @click="$router.push('/favorite')">Избранные вакансии</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="" v-if="!isAuthenticated" @click="$router.push('/login')">Авторизация</a>
@@ -31,15 +37,19 @@
         <a class="nav-link" v-if="isAuthenticated" href="" @click="logout">Выйти</a>
       </li>
     </ul>
-    <span class="navbar-text">
-      Navbar text with an inline element
+    
+    <span v-if="isAuthenticated" class="navbar-text">
+
+      <span class="user-data">Пользователь: {{currentUser.user_object.username}}</span>
+      <span class="user-data"><span v-if="currentUser_type=='employee'">Имя: {{currentEmployee.first_name}} </span><span v-if="currentUser_type=='company'">Компания: {{currentCompany.name}}</span> </span>
+      <span class="user-data">Роль: <span v-if="currentUser_type=='employee'">Работник</span><span v-if="currentUser_type=='company'">Работодатель</span></span>
     </span>
   </div>
 </nav>
 </template>
 
 <script>
-import {mapGetters} from 'vuex'	
+import {mapActions, mapGetters} from 'vuex'	
 export default {
 	name: 'Navigation',
   methods: {
@@ -48,12 +58,47 @@ export default {
       .then(() => {
         this.$router.push('/login')
       })
-    }
+    },
+    ...mapActions([
+      'FETCH_USERS',
+      'FETCH_SKILLS',
+      'FETCH_COMPANIES'
+    ]),
+  },
+  mounted() {
+    this.FETCH_COMPANIES(),
+    this.FETCH_USERS()
   },
   computed: {
     ...mapGetters([
-          'isAuthenticated'
-    ])
+          'isAuthenticated',
+          'currentUser_type',
+          'currentUser',
+          'USERS',
+          'COMPANIES',
+          'currentCompany',
+          'currentEmployee'
+    ]),
+    getEmployeeData() {
+      return this.USERS.filter(item => {
+        console.log('ITEM', item);
+        console.log('item.user_id', item.user_id, 'this.currentUser.user_object.id', this.currentUser.user_object.id);
+          if (item.user_id == this.currentUser.user_object.id) {
+            console.log('adfASFASF', item);
+            return item
+          }
+      })
+    },
+    getCompanyData() {
+      console.log(this.COMPANIES);
+      return this.COMPANIES.filter(item => {
+        console.log('item.user_id', item.user_id);
+        console.log('this.currentUser.user_object.id', this.currentUser.user_object.id);
+        if (item.user_id == this.currentUser.user_object.id) {
+          return item
+        }
+      })
+    }
   }
 }
 
@@ -62,5 +107,8 @@ export default {
 <style scoped>
 .navbar {
   margin-bottom: 25px; 
+}
+.user-data {
+  margin-right: 25px;
 }
 </style>

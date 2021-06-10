@@ -9,7 +9,8 @@ import RegistrationPage from '@/components/RegistrationPage'
 import Profile from '@/components/Profile'
 import UserTypeRegister from '@/components/UserTypeRegister'
 import CreateVacancy from '@/components/CreateVacancy'
-
+import Favorite from '@/components/Favorite'
+import Vacancy from '@/components/Vacancy'
 
 export default new VueRouter({
 	mode: 'history',
@@ -36,8 +37,13 @@ export default new VueRouter({
         },
         {
             path: '/vacancy',
-            name: 'vacancy',
+            name: 'vacancies',
             component: Vacancies
+        },
+        {
+            path: '/vacancy/:id',
+            name: 'vacancy',
+            component: Vacancy
         },
         {
             path: '/login',
@@ -64,6 +70,11 @@ export default new VueRouter({
             path: '/vacancy/create',
             name: 'createVacancy',
             component: CreateVacancy
+        },
+        {
+            path: '/favorite',
+            name: 'favorite',
+            component: Favorite
         }
 	]
 })

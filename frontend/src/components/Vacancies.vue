@@ -1,60 +1,44 @@
 <template>
 <div class="layout">
 
-  <div class="sidebar">
+  <!-- <div class="sidebar">
     <h3 class="text-header">Параметры поиска</h3>
 
     <form action="" class="form_job-title">
       <input type="text" name="form_job-title" id="form_job-title" v-model="searchQuery" placeholder="Название вакансии">
     </form>
     
-    <div class="employment-type">
-      <h6 class="sidebar-title">Тип занятости</h6>
-      <ul class="type-list-group">
-        <li>Full-Time<span class="badge badge-primary badge-pill">1</span></li>
-        <li>Part-Time<span class="badge badge-primary badge-pill">3</span></li>
-        <li>Remote<span class="badge badge-primary badge-pill">11</span></li>
-      </ul>
-    </div>
-  </div>
+  </div> -->
+  <form action="" class="vacancies-menu">
+    <button class="btn_new-vacancy btn btn-dark" v-if="currentUser_type=='company'" @click="$router.push('/vacancy/create')">Новая вакансия</button>
+    <input type="text" class="inp_find-vacancy form-control" v-model="searchQuery" placeholder="Название вакансии">
+  </form>
   <div class="content">
-  <div class="vac">
-    <h1>VACANCIES</h1>
-    {{this.VACANCIES}}
-  </div>
-  <br>
-  <div class="com">
-    <h1>COMPANIES</h1>
-    {{this.COMPANIES}}
-  </div>
-  data
-  {{currentCompany}}
-  user
-  {{currentUser}}
-    <form action="" class="vacancies-menu">
-      <button class="btn btn-dark"  @click="$router.push('/vacancy/create')">Новая вакансия</button>
-    </form>
+    
     <h3 class="text-header">Список вакансий</h3>
-
     <div class="vacancy-list" v-for="vacancy in resultQuery"
     :key="vacancy.id">
     <div class="card">
-       {{companyData(vacancy.company_id)}} 
       <div class="card-header">
         Вакансия от компании {{companyData(vacancy.company_id)[0].name}} 
       </div>
       <div class="card-body">
         <h5 class="card-title">Должность: {{vacancy.name}}</h5>
         <p class="card-text">Требования: {{vacancy.requirements}}</p>
-        <p class="card-text">Зарплата: {{vacancy.salary}}</p>
-        <a href="#" class="btn btn-outline-primary">Подробнее о вакансии</a>
-        <button type="button" class="btn btn-danger" v-if="currentCompany.id==vacancy.company_id">Удалить</button>
+        <p class="card-text">Зарплата: {{vacancy.salary}} RUB</p>
+        <!-- <form @submit.prevent="addToFav(vacancy.id)">
+          <button  class="btn btn-outline-primary" v-if="currentUser_type=='employee' && !vacancyInFavs(vacancy.id) ">Откликнуться</button>
+        </form>
+        <form @submit.prevent="removeFromFav(vacancy.id)">
+          <button class="btn btn-outline-danger" v-if="currentUser_type=='employee' && vacancyInFavs(vacancy.id) ">Удалить отклик</button>
+        </form> -->
+        <a class="btn btn-outline-primary" @click="$router.push({name: 'vacancy', params: {'id': vacancy.id}})">Подробнее</a>
       </div>
     </div>
     </div>
     
   </div>
- <!-- {{this.COMPANIES}} -->
+
 
 </div>
 </template>
@@ -67,7 +51,8 @@ export default {
   name: 'Vacancies',
   data() {
     return {
-      searchQuery: null
+      searchQuery: null,
+      IDs: []
     }
   },
   components: {
@@ -78,8 +63,33 @@ export default {
           'VACANCIES',
           'COMPANIES',
           'currentCompany',
-          'currentUser'
+          'currentUser',
+          'currentEmployee',
+          'currentUser_type',
+          'FAVS',
+          'myFAVS'
       ]),
+      myFavs() {
+        console.log('myFavs', this.FAVS);
+        return this.FAVS.filter((item) => {
+            console.log('ITEM', item.employee_id, this.currentEmployee.id);
+            if (item.employee_id == this.currentEmployee.id) {
+                return item
+            }
+        })
+      },
+      myFavsIDS() {
+        console.log('here');
+        let arr = this.myFavs
+        console.log('arr', this.myFavs);
+        let ids = []
+        for (let i = 0; i < arr.length; i++) {
+          console.log('arr[i]', arr[i])
+          ids.push(arr[i].vacancy_id)
+          
+        }
+        return ids
+      },
       // currentUserCompany() {
       //   console.log(currentUser);
       // },
@@ -91,7 +101,7 @@ export default {
       resultQuery() {
         if (this.searchQuery) {
           return this.VACANCIES.filter((item)=>{
-            return this.searchQuery.toLowerCase().split(' ').every(v => item.summary.toLowerCase().includes(v))
+            return this.searchQuery.toLowerCase().split(' ').every(v => item.name.toLowerCase().includes(v))
 
           })
         } else {
@@ -102,31 +112,31 @@ export default {
   mounted() {
     
     this.FETCH_COMPANIES(),
-    this.FETCH_VACANCIES()
+    this.FETCH_VACANCIES(),
+    this.FETCH_FAVORITE()
 
 
   },
   methods: {
     ...mapActions([
         'FETCH_VACANCIES',
-        'FETCH_COMPANIES'
+        'FETCH_COMPANIES',
+        'FETCH_FAVORITE'
     ]),
     companyData(company_id) {
       return this.COMPANIES.filter( function(item) {
-        console.log('company_id', company_id);
-        console.log('ITEM', item);
         if (item.id == company_id) {
-          console.log('item.company_id', item.company_id);
+
           return item
         }
       })
     },
-    createVacancy() {
-      const vacancy_data = {
+    // createVacancy() {
+    //   const vacancy_data = {
 
-      }
-      console.log('vacancy_data', vacancy_data);
-    }
+    //   }
+
+    // },
   }
 }
 </script>
@@ -134,10 +144,9 @@ export default {
 <style scoped>
 
 .layout {
-  display: flex;
-  flex-direction: row;
+
 }
-.sidebar {
+/* .sidebar {
   width: 15%;
   margin-top: 3%;
   margin-left: 5%;
@@ -147,25 +156,28 @@ export default {
   position: fixed;
   z-index: 1;
   background-color: white;
-}
+} */
 
 .content {
-  width: 60%;
   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
   transition: 0.3s;
-  margin-top: 3%;
-  margin-left: 25%;
+
+  margin: 0 auto;
+  margin-top: 50px;
 }
 
 .card {
   margin-top: 15px;
 }
-
-.type-list-group {
-  border: solid red;
-  list-style: none;
-  text-align: left;
+.inp_find-vacancy {
+  width: 500px;
+  margin-left: 15px;
 }
+
+.btn_new-vacancy{
+  align-self: flex-start;
+}
+
 .sidebar-title {
   margin: 15px 0px;
   border: solid red;
@@ -173,8 +185,11 @@ export default {
 }
 .vacancies-menu {
   display: flex;
-  padding: 25px;
-  justify-content: flex-end;
+  /* border: solid 1px; */
+  padding: 15px;
+  border-radius: 5px;
+  margin: 5px;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
 }
 .vac{
   border: solid red;
