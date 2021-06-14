@@ -331,7 +331,7 @@ def vacancy():
             return {'message': 'Vacancy not created'}
 
 
-@app.route('/register', methods=['POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
     data = request.get_json()
     print("debug register data income", data)
@@ -394,7 +394,7 @@ def favorite():
         except:
             return {'message': 'Favorite creation error'}, 500
     
-@app.route('/favorite/delete', methods=['POST'])
+@app.route('/favorite/delete', methods=['GET', 'POST'])
 @cross_origin()
 def favorite_delete():
     f_data = request.get_json()
@@ -403,7 +403,7 @@ def favorite_delete():
     return {'message': 'favorite deleted'}
 
 
-@app.route('/skill/<int:id>', methods=['PUT'])
+@app.route('/skill/<int:id>', methods=['GET', 'PUT'])
 @cross_origin()
 def skill_update(id):
     skill_data = request.get_json()
@@ -417,7 +417,7 @@ def skill_update(id):
 
 
 
-@app.route('/skill/delete', methods=['POST'])
+@app.route('/skill/delete', methods=['GET', 'POST'])
 def skill_delete():
     skill = request.get_json()
     print('DELETE SKILL', skill)
@@ -454,7 +454,7 @@ def company():
             return {'message': 'error'}, 500
 
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     data = request.get_json()
     user_type = data['user_type']
@@ -496,7 +496,7 @@ def login():
         return {'message': 'Wrong credentials'}, 401
 
 
-@app.route('/refresh_token', methods=['POST'])
+@app.route('/refresh_token', methods=['GET', 'POST'])
 @jwt_required(refresh=True)
 def refresh_token():
     current_user = get_jwt_identity()
@@ -504,7 +504,7 @@ def refresh_token():
     return {'access_token': access_token}
 
 
-@app.route('/logout/access', methods=['POST'])
+@app.route('/logout/access', methods=['GET', 'POST'])
 @jwt_required
 def logout_access():
     jti = get_jwt()['jti']
@@ -516,7 +516,7 @@ def logout_access():
         return {'message': 'Something went wrong'}, 500
 
 
-@app.route('/logout/refresh', methods=['POST'])
+@app.route('/logout/refresh', methods=['GET', 'POST'])
 @jwt_required(refresh=True)
 def logout_refresh():
     jti = get_jwt()['jti']
@@ -528,4 +528,4 @@ def logout_refresh():
         return {'message': 'Something went wrong'}, 500
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0')
